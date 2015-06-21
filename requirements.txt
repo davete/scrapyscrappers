@@ -1,0 +1,4 @@
+Scrapy==0.24.6
+service-identity==14.0.0
+beautifulsoup4==4.3.2
+ScrapyElasticSearch==0.6.1
