@@ -5,6 +5,7 @@ from scrapy.http import Request
 import bs4
 
 from scrapyscrappers.items import ScrapyscrappersItem
+from scrapyscrappers.util import obtain_keywords,  obtain_locations,  current_datetime
 
 class CareerbuilderSpider(Spider):
     name = "careerbuilder"
@@ -32,8 +33,9 @@ class CareerbuilderSpider(Spider):
     def parse_item(self,  response):
         self.logger.debug('parse_item %s' % response.url)
         item = response.meta['item']
-        soup = bs4.BeautifulSoup(response.body)          
-        item['description'] = soup.select('')[0].text
+        #soup = bs4.BeautifulSoup(response.body)     
+        item['title'] = response.xpath('//h1/span/text()').extract()
+        item['description'] = ''
         item['clearance'] = ''
         self.logger.debug('title item %s' % item['title'])
         yield item
@@ -47,9 +49,9 @@ class CareerbuilderSpider(Spider):
             item = ScrapyscrappersItem()
             item['keyword'] = response.meta['keyword']
             item['date_search'] = current_datetime()
-            item['item_url'] = self.base_url + soupitem.select('')[0].attrs.get('href')
-            item['title'] = soupitem.select('')[0].text
-            item['short_description'] = soupitem.select('')[0].text.strip()
+            item['item_url'] = row.css('.jt').xpath('@href').extract()[0]
+            item['title'] = row.css('.jt::text').extract()
+            item['short_description'] = ''
             item['company'] = ''
             item['locality'] = ''
             item['region'] = ''
@@ -58,10 +60,8 @@ class CareerbuilderSpider(Spider):
             item['published'] = ''
             self.logger.debug('title %s' % item['title'])
             yield Request(item['item_url'],  callback=self.parse_item, meta={'item': item} )
-        #next = soup.select('a.jt.prefTitle')
-        #next = soup.select('td.bottom-pagination')
-        # is JL_MXDLPagination2_next constant or changes
-        response.xpath('.//td[@class="bottom-pagination"]//a[@class="JL_MXDLPagination2_next"]/@href').extract()[0]
+        next = response.css('.JL_MXDLPagination2_next').xpath('@href').extract()
+        # FIXME: uncomment
         if next:
             self.logger.debug('next url: %s' % next[0] )
             # FIXME: the request seems not being called
