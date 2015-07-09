@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
-from scrapy import log
 from datetime import datetime,  timedelta
 from os.path import exists
 from settings import KEYWORDS_PATH,  LOCATIONS_PATH,  DATETIME_FORMAT
+import logging
+
+logger = logging.getLogger(__name__)
 
 def obtain_keywords():
     if exists(KEYWORDS_PATH):
@@ -40,7 +42,7 @@ def timeago2datetimestr(datetimestr,  timeago):
 def table2dict(soup,  htmltag):
     details = {}
     tables  = soup.select(htmltag)
-    log.msg('tables %s' % len(tables), log_level=log.DEBUG)
+    logger.debug('tables %s' % len(tables))
     for table in tables:
         for row in table.find_all('tr'):
             cells = row.find_all('td', limit=2)

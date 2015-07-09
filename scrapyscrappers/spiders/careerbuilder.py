@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from scrapy import log,  Spider
+from scrapy import Spider
 from scrapy.http import Request
 
 import bs4
@@ -14,34 +14,36 @@ class CareerbuilderSpider(Spider):
 
 
     def __init__(self, keywords="", locations="",  *args, **kwargs):
-        log.msg('in init', log_level=log.DEBUG)
+        self.logger.debug('in init')
         # to call the spider with keywords and locations arguments
         super(CareerbuilderSpider, self).__init__(*args, **kwargs)
         self.keywords = keywords or obtain_keywords()
         self.locations = locations or obtain_locations()
 
     def start_requests(self):
-        log.msg('in start requests', log_level=log.DEBUG)
+        self.logger.debug('in start requests')
         for location in self.locations:
             for keyword in self.keywords:
                 url_params = {'keyword': keyword,  'location': location}
                 url = self.query_url % url_params
-                log.msg('request url %s' % url, log_level=log.DEBUG)
+                self.logger.debug('request url %s' % url)
                 yield Request(url, meta={'keyword': keyword})
                 
     def parse_item(self,  response):
-        log.msg('parse_item %s' % response.url, log_level=log.DEBUG)
+        self.logger.debug('parse_item %s' % response.url)
         item = response.meta['item']
         soup = bs4.BeautifulSoup(response.body)          
         item['description'] = soup.select('')[0].text
         item['clearance'] = ''
+        self.logger.debug('title item %s' % item['title'])
         yield item
 
     def parse(self, response):
-        soup = bs4.BeautifulSoup(response.body)
-        soupitems = soup.select('')    
-        for soupitem in soupitems:
-            log.msg('parsing', log_level=log.DEBUG)
+#        itemscopes_ = response.xpath('//table[@itemscope]')
+#        for itemscope in itemscopes:
+        table = response.css('.gs-job-result-abstract')
+        for row in table:
+            #self.logger.debug('parsing')
             item = ScrapyscrappersItem()
             item['keyword'] = response.meta['keyword']
             item['date_search'] = current_datetime()
@@ -54,12 +56,13 @@ class CareerbuilderSpider(Spider):
             item['salary'] = ''
             item['department'] = ''
             item['published'] = ''
-            log.msg('title %s' % item['title'], log_level=log.DEBUG)
+            self.logger.debug('title %s' % item['title'])
             yield Request(item['item_url'],  callback=self.parse_item, meta={'item': item} )
         #next = soup.select('a.jt.prefTitle')
         #next = soup.select('td.bottom-pagination')
         # is JL_MXDLPagination2_next constant or changes
         response.xpath('.//td[@class="bottom-pagination"]//a[@class="JL_MXDLPagination2_next"]/@href').extract()[0]
         if next:
-            log.msg('next url: %s' % next[0],  log_level=log.DEBUG )
-            yield Request(self.base_url + next[0]['href'],  callback=self.parse)
+            self.logger.debug('next url: %s' % next[0] )
+            # FIXME: the request seems not being called
+            yield Request(next[0],  callback=self.parse)

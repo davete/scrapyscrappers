@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import scrapy
-from scrapy import log,  Request
-from scrapy.contrib.spiders import CrawlSpider, Rule
-from scrapy.contrib.linkextractors.sgml import SgmlLinkExtractor 
+from scrapy import Request
+from scrapy.spiders import CrawlSpider, Rule
+from scrapy.linkextractors import LinkExtractor 
 
 import bs4
 
@@ -16,44 +16,44 @@ class  SimplyhiredCrawler(CrawlSpider):
     base_url = 'https://www.simplyhired.com'
     query_url = 'https://www.simplyhired.com/search?q=%(keyword)s&l=%(location)s'
     rules = ( 
-                  Rule (SgmlLinkExtractor(restrict_xpaths=('//a[@class="next"]',)) , follow= True ), 
+                  Rule (LinkExtractor(restrict_xpaths=('//a[@class="next"]',)) , follow= True ), 
         )
         
     def __init__(self, keywords="", locations="",  *args, **kwargs):
-        log.msg('in init', log_level=log.DEBUG)
+        self.logger.debug('in init')
         # to call the spider with keywords and locations arguments
         super(SimplyhiredCrawler, self).__init__(*args, **kwargs)
         self.keywords = keywords or obtain_keywords()
         self.locations = locations or obtain_locations()
 
     def start_requests(self):
-        log.msg('in start requests', log_level=log.DEBUG)
+        self.logger.debug('in start requests')
         for location in self.locations:
             for keyword in self.keywords:
                 url_params = {'keyword': keyword,  'location': location}
                 url = self.query_url % url_params
-                log.msg('request url %s' % url, log_level=log.DEBUG)
+                self.logger.debug('request url %s' % url)
                 yield Request(url, meta={'keyword': keyword})            
 
     def parse_item(self,  response):
-        log.msg('parse_item %s' % response.url, log_level=log.DEBUG)
+        self.logger.debug('parse_item %s' % response.url)
         item = response.meta['item']
         try:
-            # log.msg('extracting descrption', log_level=log.DEBUG)
+            # self.logger.debug('extracting descrption')
             item['description'] = response.css('div.detail')[0].extract()
             #item['description'] = response.css('div.description-full::text')[0].extract()
         except:
-            #log.msg(response.css('div.description-full::text'), log_level=log.DEBUG)
-            log.msg('error parsing description', log_level=log.DEBUG)
+            #self.logger.debug(response.css('div.description-full::text'))
+            self.logger.debug('error parsing description')
 #        item['clearance'] = infodict.get('SECURITY CLEARANCE')
         yield item            
 
                 
     def parse(self, response):
-        log.msg('in parse', log_level=log.DEBUG)
+        self.logger.debug('in parse')
 #        # for sel in response.xpath('//div[@class="job"]'):
 #        for sel in response.css('div.job'):
-#            log.msg('parsing', log_level=log.DEBUG)
+#            self.logger.debug('parsing')
 #            item = ScrapyscrappersItem()
 #            item['keyword'] = response.meta['keyword']
 #            item['date_search'] = current_datetime()
@@ -66,7 +66,7 @@ class  SimplyhiredCrawler(CrawlSpider):
         soup = bs4.BeautifulSoup(response.body)
         soupitems = soup.select('div.job')     
         for soupitem in soupitems:
-            log.msg('parsing', log_level=log.DEBUG)
+            self.logger.debug('parsing')
             item = ScrapyscrappersItem()
             item['keyword'] = response.meta['keyword']
             item['date_search'] = current_datetime()
@@ -88,6 +88,6 @@ class  SimplyhiredCrawler(CrawlSpider):
             #department
             #description
             
-            log.msg('title %s' % item['title'], log_level=log.DEBUG)
+            self.logger.debug('title %s' % item['title'])
             yield Request(item['item_url'],  callback=self.parse_item, meta={'item': item} )
     

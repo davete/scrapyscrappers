@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-from scrapy import log
 from scrapy.http import Request
-from scrapy.contrib.spiders import CrawlSpider, Rule
-from scrapy.contrib.linkextractors.sgml import SgmlLinkExtractor 
+from scrapy.spiders import CrawlSpider, Rule
+from scrapy.linkextractors import LinkExtractor 
+
 
 import bs4
 
@@ -18,28 +18,28 @@ class UsajobsCrawler(CrawlSpider):
     rules = [
              # not using this rule to parse items from the list
              #Rule(SgmlLinkExtractor(restrict_xpaths=('//div[@id="jobResultNew"]//a[@class="jobTitleLink"]')), callback='parse_item'), 
-             Rule(SgmlLinkExtractor(restrict_xpaths=('//div[@class="resultspager-middle"]//a[@class="nextPage"]')), follow=True)
+             Rule(LinkExtractor(restrict_xpaths=('//div[@class="resultspager-middle"]//a[@class="nextPage"]')), follow=True)
              ]
 
     def __init__(self, keywords="", locations="",  *args, **kwargs):
-        log.msg('in init', log_level=log.DEBUG)
+        self.logger.debug('in init', log_level=log.DEBUG)
         # to call the spider with keywords and locations arguments
         super(UsajobsCrawler, self).__init__(*args, **kwargs)
         self.keywords = keywords or obtain_keywords()
         self.locations = locations or obtain_locations()
 
     def start_requests(self):
-        log.msg('in start requests', log_level=log.DEBUG)
+        self.logger.debug('in start requests', log_level=log.DEBUG)
         for location in self.locations:
             for keyword in self.keywords:
                 url_params = {'keyword': keyword,  'location': location}
                 url = self.query_url % url_params
-                log.msg('request url %s' % url, log_level=log.DEBUG)
+                self.logger.debug('request url %s' % url, log_level=log.DEBUG)
                 yield Request(url, meta={'keyword': keyword})            
                 
 
     def parse_item(self,  response):
-        log.msg('parse_item %s' % response.url, log_level=log.DEBUG)
+        self.logger.debug('parse_item %s' % response.url, log_level=log.DEBUG)
         item = response.meta['item']
         soup = bs4.BeautifulSoup(response.body)          
         # FIXME: uncomment when not debugging
@@ -49,7 +49,7 @@ class UsajobsCrawler(CrawlSpider):
         yield item
 
     def parse(self, response):
-        log.msg('in parse', log_level=log.DEBUG)
+        self.logger.debug('in parse', log_level=log.DEBUG)
         soup = bs4.BeautifulSoup(response.body)
         soupitems = soup.select('div#jobResultNew')    
         for soupitem in soupitems:
@@ -70,5 +70,5 @@ class UsajobsCrawler(CrawlSpider):
             item['salary'] = details.get('Salary',  '')
             item['department'] = details.get('Department',  '')
             # item.published = ''
-            log.msg('title %s' % item['title'], log_level=log.DEBUG)
+            self.logger.debug('title %s' % item['title'], log_level=log.DEBUG)
             yield Request(item['item_url'],  callback=self.parse_item, meta={'item': item} )
