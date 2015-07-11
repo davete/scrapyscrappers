@@ -53,8 +53,19 @@ def table2dict(soup,  htmltag):
                 pass
     return details
 
-# for usajobs, not being used
+# for clearedconnections
+def tablexpath2dict(table):
+    details = {}
+    rows = table.xpath('.//tr')
+    for row in rows:
+        try:
+            details[row.xpath('./th/text()').extract()[0].replace(':', '')] = row.xpath('./td/text()').extract()[0]
+        except:
+            pass
+    return details
+    
 
+# for usajobs, not being used
 def divjobinfo12dict(soup):
     details = {}
     div  = soup.select('div#jobinfo1')[0]
