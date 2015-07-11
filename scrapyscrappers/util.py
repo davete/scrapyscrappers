@@ -63,3 +63,10 @@ def divjobinfo12dict(soup):
         value = p.select('span.info')[0].stripped_strings.next()
         details[key] = value
     return details
+
+def html2str(html):
+#    import lxml.html
+#    import lxml.etree
+#    root = lxml.html.fromstring(desc)
+#    return lxml.html.tostring(root, method="text", encoding=unicode)
+    return bs4.BeautifulSoup(html).text
