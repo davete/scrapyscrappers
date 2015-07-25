@@ -30,9 +30,12 @@ def datetime2datetimestr(dt):
     return dt.strftime(DATETIME_FORMAT)
 
 def timeago2datetimestr(datetimestr,  timeago):
+    # timeago is an sting like: 
+    # +30 days ago, 30+ days ago, 1 day ago, 18 hours ago
     timeagolist = timeago.split()
     if timeagolist[1] == 'days' or 'day':
-        td = timedelta(days=int(timeagolist[0].split('+')[0]))
+        # + could be on the left or right of the number
+        td = timedelta(days=int(timeagolist[0].replace('+',  '')))
     if timeagolist[1] == 'hours':
         td = timedelta(hours=int(timeagolist[0]))
     delta = datetimestr2datetime(datetimestr)  - td
@@ -63,7 +66,7 @@ def tablexpath2dict(table):
         except:
             pass
     return details
-    
+
 
 # for usajobs, not being used
 def divjobinfo12dict(soup):
