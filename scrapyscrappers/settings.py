@@ -40,6 +40,15 @@ DOWNLOADER_MIDDLEWARES = {
     'scrapy.contrib.downloadermiddleware.httpcache.HttpCacheMiddleware': 300,
 }
 
-FEED_FORMAT = "jsonlines"
-FEED_URI = "file:///"+JSON_PATH+"/%(name)s-%(time)s.json"
+#FEED_FORMAT = "jsonlines"
+FEED_FORMAT = "jsonident"
+FEED_URI = "file:///" + join(JSON_PATH, "%(name)s-%(time)s.json")
+#FEED_URI = "file:///" + join(JSON_PATH, "%(keyword)s-%(name)s-%(time)s.json")
+
+# FIXME: instead of creating a new exporter, see how to pass the encoder 
+#json.JSONEncoder(indent=4)
+FEED_EXPORTERS = {
+ #'jsonlines': 'scrapy.contrib.exporter.JsonLinesItemExporter', 
+ 'jsonident': 'scrapyscrappers.feedexporter.JsonIdentItemExporter'
+}
 
