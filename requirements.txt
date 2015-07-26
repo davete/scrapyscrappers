@@ -1,4 +1,6 @@
 Scrapy==1.0.1
 service-identity==14.0.0
 beautifulsoup4==4.3.2
-ScrapyElasticSearch==0.6.1
+Twisted==14.0.2
+txsocksx==1.13.0.3
+#ScrapyElasticSearch==0.6.1
