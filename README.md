@@ -48,4 +48,11 @@ to run one of the scrappers
 
     scrapy crawl scrappername
 
+to run one of the scrappers using keywords like command like argument and json file name like command line arguments:
 
+    scrapy crawl scrappername -o json/scrappername.json -a keywords=python,ruby
+
+to run all the spiders from an script:
+
+    run.py
+    
