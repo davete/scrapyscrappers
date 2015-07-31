@@ -12,21 +12,25 @@
 
 from os.path import dirname,  join,  abspath
 #from scrapy.extensions.httpcache import DummyPolicy
-# FIXME: change in producion
-DEBUG=True
-JSON_DIR = 'json'
-DATA_DIR = 'data'
-LOG_DIR = 'log'
-LOG_FILENAME = 'scrapyscrappers.log'
-BASE_PATH = dirname(dirname(abspath(__file__)))
-JSON_PATH = join(BASE_PATH,  JSON_DIR)
-DATA_PATH = join(BASE_PATH,  DATA_DIR)
-LOG_PATH = join(BASE_PATH,  LOG_DIR,  LOG_FILENAME)
 
 BOT_NAME = 'scrapyscrappers'
 
 SPIDER_MODULES = ['scrapyscrappers.spiders']
 NEWSPIDER_MODULE = 'scrapyscrappers.spiders'
+
+
+# FIXME: change in producion
+DEBUG=True
+JSON_DIR = 'json'
+DATA_DIR = 'data'
+LOG_DIR = 'log'
+LOG_FILENAME =  BOT_NAME + '.log'
+BASE_PATH = dirname(dirname(abspath(__file__)))
+JSON_PATH = join(BASE_PATH,  JSON_DIR)
+DATA_PATH = join(BASE_PATH,  DATA_DIR)
+LOG_PATH = join(BASE_PATH,  LOG_DIR)
+LOG_FULLPATH = join(LOG_PATH,  LOG_FILENAME)
+
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'scrapyscrappers (+http://www.yourdomain.com)'
@@ -133,7 +137,7 @@ LOG_LEVEL = 'DEBUG'
 
 #LOG_ENABLED = True
 # uncomment to log to file
-#LOG_FILE = LOG_PATH
+#LOG_FILE = LOG_FULLPATH
 #LOG_ENCODING = 'utf-8'
 #STATS_DUMP = True # default True
 
@@ -168,6 +172,13 @@ LOCATIONS_FILE = 'locations.txt'
 KEYWORDS_PATH = join(BASE_PATH,  KEYWORDS_FILE)
 LOCATIONS_PATH = join(BASE_PATH,  LOCATIONS_FILE)
 DATETIME_FORMAT = '%Y-%m-%d %H:%M'
+HTML_DIR = 'html'
+HTML_PATH= join(HTML_DIR, "%(name)s-%(location)s-%(keyword)s-%(item)s-%(time)s.html")
+LOG_OK_URL_FILENAME = 'ok_url.log'
+LOG_FAIL_URL_FILENAME = 'fail_url.log'
+LOG_OK_URL_FULLPATH = join(LOG_PATH,  LOG_OK_URL_FILENAME)
+LOG_FAIL_URL_FULLPATH = join(LOG_PATH,  LOG_FAIL_URL_FILENAME)
+
 
 # For socks proxy
 SOCKSPROXY = 'http://127.0.0.1:9050'
@@ -177,3 +188,9 @@ NEWCIRC = True
 USE_PROXY = True
 PROXIES_FILE = 'proxies.json'
 PROXIES_PATH = join(DATA_PATH,  PROXIES_FILE)
+
+
+try:
+    from settings_local import *
+except:
+    pass
