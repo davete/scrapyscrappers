@@ -24,8 +24,8 @@ class RandomUserAgentMiddleware(object):
         
 class ProxyMiddleware(object):
     def process_request(self, request, spider):
-        logger.debug('using proxy')
         request.meta['proxy'] = settings.get('HTTP_PROXY')
+        logger.debug('using proxy %s' % request.meta['proxy'] ) 
 
 #https://github.com/ikeikeikeike/scrapy-proxies
 class BaseHttpProxyMiddleware(object):

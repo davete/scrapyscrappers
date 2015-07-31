@@ -1,9 +1,9 @@
 import json
 import codecs
+import logging
 
 from scrapy.exporters import JsonLinesItemExporter,  JsonItemExporter
 
-import logging
 
 logger = logging.getLogger(__name__)
 

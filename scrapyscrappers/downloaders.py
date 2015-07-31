@@ -22,7 +22,7 @@ class Socks5DownloadHandler(HTTP11DownloadHandler):
     def download_request(self, request, spider):
         """Return a deferred for the HTTP download"""
         agent = ScrapySocks5Agent(contextFactory=self._contextFactory, pool=self._pool)
-        logger.debug('Changing Socks5Agent...')
+        logger.debug('Changing downloader agent...')
         return agent.download_request(request)
         # no need for this, better not to use settings variable
 #        if spider.settings.get('USE_SOCKS5PROXY',  False):
@@ -41,7 +41,7 @@ class ScrapySocks5Agent(ScrapyAgent):
         # otherwise it will be none
 #        proxy = request.meta.get('proxy')
         proxy = settings.get('SOCKSPROXY',  '127.0.0.1:9050')
-        logger.debug('Proxy: %s' % proxy)
+        logger.debug('downloader agent proxy: %s' % proxy)
         if proxy:
             _, _, proxyHost, proxyPort, proxyParams = _parse(proxy)
             _, _, host, port, proxyParams = _parse(request.url)
