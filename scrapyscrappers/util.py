@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime,  timedelta
 from os.path import exists
-from settings import KEYWORDS_PATH,  LOCATIONS_PATH,  DATETIME_FORMAT
+from settings import KEYWORDS_PATH,  LOCATIONS_PATH,  DATETIME_FORMAT,  HTML_PATH
+from scrapy.conf import settings
 import logging
 
 logger = logging.getLogger(__name__)
@@ -22,6 +23,9 @@ def obtain_locations():
 
 def current_datetime():
     return datetime.now().strftime(DATETIME_FORMAT)
+
+def now_timestamp():
+    return datetime.utcnow().replace(microsecond=0).isoformat().replace(':', '-')
 
 def datetimestr2datetime(datetimestr):
     return datetime.strptime(datetimestr, DATETIME_FORMAT)
@@ -84,3 +88,24 @@ def html2str(html):
 #    root = lxml.html.fromstring(desc)
 #    return lxml.html.tostring(root, method="text", encoding=unicode)
     return bs4.BeautifulSoup(html).text
+
+
+def save_html(body,  args):
+    html_path = settings.get('HTML_PATH') % args
+    with open(html_path,  'w') as f:
+        f.write(body)
+    logger.debug('--------- saving html %s' % html_path)
+
+
+def string2filename(text):
+    return "".join(x for x in text.lower() if x.isalnum())
+    
+
+def url2filename(text):
+    return text.replace(' ', '_').replace('https://', '').replace('http://','').replace('/', '_')
+
+
+def append(file, string):
+    file = open(file, 'a')
+    file.write(string+"\n")
+    file.close()
