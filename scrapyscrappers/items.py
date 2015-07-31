@@ -27,4 +27,5 @@ class ScrapyscrappersItem(scrapy.Item):
     
 #    base_url = scrapy.Field()
     keyword = scrapy.Field()
+    location_search = scrapy.Field()
     date_search = scrapy.Field()
