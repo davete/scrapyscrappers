@@ -82,10 +82,6 @@ DOWNLOADER_MIDDLEWARES = {
     'scrapyscrappers.middlewares.FAHttpProxyMiddleware': 410, 
     # no need to disable default proxymiddleware
 #    'scrapy.downloadermiddlewares.httpproxy.HttpProxyMiddleware':  None, 
-    # the priority to change the proxy should be higher than the retry, in case the proxy doesn't only change on retry
-#    'scrapyscrappers.middlewares_retry.RetryChangeProxyMiddleware': 200,
-#    'scrapyscrappers.middlewares_retry.RetryChangeCircuit': 200,    
-#    'scrapy.downloadermiddlewares.retry.RetryMiddleware': None,
 }
 
 # Enable or disable extensions
@@ -134,6 +130,7 @@ HTTPCACHE_DIR = DATA_PATH # default 'httpcache'
 # FIXME: change in producion
 LOG_LEVEL = 'DEBUG'
 #LOG_LEVEL = 'INFO'
+LOG_FORMAT = "%(levelname)s [%(name)s] ( %(filename)s:%(lineno)s, in %(funcName)s) ______ %(message)s"
 
 #LOG_ENABLED = True
 # uncomment to log to file
@@ -165,6 +162,7 @@ FEED_EXPORTERS = {
  'jsonident': 'scrapyscrappers.feedexporter.JsonIdentItemExporter'
 }
 
+
 ## custom variables
 
 KEYWORDS_FILE = 'keywords.txt'
@@ -193,4 +191,4 @@ PROXIES_PATH = join(DATA_PATH,  PROXIES_FILE)
 try:
     from settings_local import *
 except:
-    pass
+    print 'Could not import settings_local'
