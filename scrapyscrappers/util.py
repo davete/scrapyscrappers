@@ -94,7 +94,7 @@ def save_html(body,  args):
     html_path = settings.get('HTML_PATH') % args
     with open(html_path,  'w') as f:
         f.write(body)
-    logger.debug('--------- saving html %s' % html_path)
+    logger.debug('saving html %s' % html_path)
 
 
 def string2filename(text):

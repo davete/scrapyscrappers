@@ -28,7 +28,7 @@ class JsonIdentItemExporter(JsonItemExporter):
 
     def __init__(self, file, **kwargs):
         filename = file.name
-        logger.debug(filename)
+        logger.debug('in JsonIdentItemExporter %s' % filename)
         kwargs['indent'] = 2
         # equivalent to
         #json.JSONEncoder(indent=4)

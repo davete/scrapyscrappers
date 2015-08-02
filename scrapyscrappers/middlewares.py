@@ -18,7 +18,7 @@ class RandomUserAgentMiddleware(object):
         #ua  = random.choice(settings.get('USER_AGENT_LIST'))
         ua = random.choice(AGENTS)
         if ua:
-            logger.debug('Changing ua %s' % ua)
+            logger.debug('changing user agent %s' % ua)
             request.headers.setdefault('User-Agent', ua)
             #request.headers['User-Agent'] = agent
         
@@ -45,7 +45,7 @@ class BaseHttpProxyMiddleware(object):
             try:
                 request.meta['proxy'] = self._http_proxy
             except Exception, e:
-                log.msg("Exception %s" % e, _level=log.CRITICAL)
+                logger.critical(" Exception %s" % e)
 
     def use_proxy(self, request):
         """
