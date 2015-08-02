@@ -5,11 +5,11 @@ from scrapy.http import Request
 import re
 from datetime import datetime
 
-from scrapyscrappers.items import ScrapyscrappersItem
-from scrapyscrappers.util import obtain_keywords,  obtain_locations,  current_datetime,  datetime2datetimestr,  tablexpath2dict
+from scrapyscrappers.spiders.basespider import BaseSpider
+from scrapyscrappers.util import datetime2datetimestr,  tablexpath2dict
 
 
-class ClearedconnectionsSpider(Spider):
+class ClearedconnectionsSpider(BaseSpider):
     name = "clearedconnections"
     allowed_domains = ["www.clearedconnections.com"]
     base_url = 'https://www.clearedconnections.com'
@@ -19,40 +19,22 @@ class ClearedconnectionsSpider(Spider):
     # keywords are separated by +
     #query_url = 'https://www.clearedconnections.com/JobSeekerX/SearchJobs.asp?SearchStartingPoint=MainSearchForm&txtaction=CREATE&ProfileID=&SubmitToSearch=Search&rvsd=-1&fromsearchpage=true&lcta=&st=%(location_state)s%2CAL&ckwr=&skll=&cg=&pstn=&slr1=0&slr2=0&bnus=&relo=&exp2=&lvl=&dgr=&trvl=&drss=&wrks=&bnft=&ln=&ctzn=&clrn=&visa=&lctr=&city=&st=%(location_state)s%2CAL&prvn=&zip=&cn=&zip1=&rdus=&cmsa=&pmsa=&msa=&reg=&udi1=&udi2=&udi3=&udi4=&udi5=&kwrd=%(keywords)s&kwdt=1&btnSearch=Run+Search+Now&JobSearchProfileName=%3CSaved+Search+Name%3E'
     
-    def __init__(self, keywords="", locations="",  *args, **kwargs):
-        self.logger.debug('in init')
-        # to call the spider with keywords and locations arguments
-        super(ClearedconnectionsSpider, self).__init__(*args, **kwargs)
-        self.keywords = keywords or obtain_keywords()
-        self.locations = locations or obtain_locations()
 
-    def start_requests(self):
-        self.logger.debug('in start requests')
-        for location in self.locations:
-            for keyword in self.keywords:
-                url_params = {'keyword': keyword,  'location': location}
-                url = self.query_url % url_params
-                self.logger.debug('request url %s' % url)
-                yield Request(url, meta={'keyword': keyword})
-                
     def parse_item(self,  response):
-        self.logger.debug('parse_item %s' % response.url)
-        item = response.meta['item']  
+        item = super(ClearedconnectionsSpider, self).parse_item(response)           
         item['description'] = response.xpath('//div[@class="viewjob"]').extract()[0]
-        
         table = response.xpath('//table[@class="LabelValueTable"]')
         details = tablexpath2dict(table)
         item['clearance'] = details.get('Security Clearances',  '')
         yield item
 
+
     def parse(self, response):
+        super(ClearedconnectionsSpider,  self).parse(response)
         table = response.xpath('//table[@class="jstext"]')
         rows = table.xpath('.//tr')[3:]
         for row in rows:
-            self.logger.debug('parsing')
-            item = ScrapyscrappersItem()
-            item['keyword'] = response.meta['keyword']
-            item['date_search'] = current_datetime()
+            item = self.init_item(response)
             
             cols = row.xpath('.//td')
             

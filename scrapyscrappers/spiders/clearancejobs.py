@@ -1,14 +1,12 @@
 # -*- coding: utf-8 -*-
-from scrapy import Spider
 from scrapy.http import Request
 
-import bs4
 from datetime import datetime
 
-from scrapyscrappers.items import ScrapyscrappersItem
-from scrapyscrappers.util import obtain_keywords,  obtain_locations,  current_datetime,  datetime2datetimestr
+from scrapyscrappers.spiders.basespider import BaseSpider
+from scrapyscrappers.util import datetime2datetimestr
 
-class ClearancejobsSpider(Spider):
+class ClearancejobsSpider(BaseSpider):
     name = "clearancejobs"
     allowed_domains = ["www.clearancejobs.com"]
     base_url = 'https://www.clearancejobs.com'
@@ -19,36 +17,19 @@ class ClearancejobsSpider(Spider):
     #https://www.clearancejobs.com/jobs?Ntx=mode+matchall&Ntk=IMain&RC=25&Ns=p_TimeStamp|1&Ntt=engineer
     #https://www.clearancejobs.com/jobs?Ntx=mode+matchall&Ntk=IMain&RC=25&Ns=p_TimeStamp|1&Ntt=python&No=25
 
-    def __init__(self, keywords="", locations="",  *args, **kwargs):
-        self.logger.debug('in init')
-        # to call the spider with keywords and locations arguments
-        super(ClearancejobsSpider, self).__init__(*args, **kwargs)
-        self.keywords = keywords or obtain_keywords()
-        self.locations = locations or obtain_locations()
 
-    def start_requests(self):
-        self.logger.debug('in start requests')
-        for location in self.locations:
-            for keyword in self.keywords:
-                url_params = {'keyword': keyword,  'location': location}
-                url = self.query_url % url_params
-                self.logger.debug('request url %s' % url)
-                yield Request(url, meta={'keyword': keyword})
-                
     def parse_item(self,  response):
-        self.logger.debug('parse_item %s' % response.url)
-        item = response.meta['item']      
+        item = super(ClearancejobsSpider, self).parse_item(response)
         item['description'] =  response.css('.cj-job-details').extract()[0] #div
         yield item
 
+
     def parse(self, response):
-        self.logger.debug('parsing')
+        super(ClearancejobsSpider,  self).parse(response)
         results = response.css('#search-results') # div
         rows = results.css('.cj-search-result-item')
         for row in rows:
-            item = ScrapyscrappersItem()
-            item['keyword'] = response.meta['keyword']
-            item['date_search'] = current_datetime()
+            item = self.init_item(response)
             item['title'] = row.xpath('.//strong[@class="cj-search-result-item-title"]/a/text()').extract()[0].strip()
             item['item_url'] = row.xpath('.//strong[@class="cj-search-result-item-title"]/a/@href').extract()[0]
             item['short_description'] = ''
@@ -79,4 +60,3 @@ class ClearancejobsSpider(Spider):
         if next:
             self.logger.debug('next url: %s' % next[0] )
             yield Request(next[0],  callback=self.parse,  meta={'item': item})
-            

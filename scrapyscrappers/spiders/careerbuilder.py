@@ -1,60 +1,40 @@
 # -*- coding: utf-8 -*-
-from scrapy import Spider
 from scrapy.http import Request
+from scrapy.conf import settings
 
-import bs4
+from scrapyscrappers.spiders.basespider import BaseSpider
+from scrapyscrappers.util import timeago2datetimestr,  append
 
-from scrapyscrappers.items import ScrapyscrappersItem
-from scrapyscrappers.util import obtain_keywords,  obtain_locations,  current_datetime,  timeago2datetimestr
-# FIXME: get settings properly
-# from scrapy.utils.project import get_project_settings
-# settings = get_project_settings()
-#from scrapyscrappers.settings import DEBUG
 
-class CareerbuilderSpider(Spider):
+class CareerbuilderSpider(BaseSpider):
     name = "careerbuilder"
     allowed_domains = ["www.careerbuilder.com"]
     base_url = 'https://www.careerbuilder.com'
     query_url = 'https://www.careerbuilder.com/jobseeker/jobs/jobresults.aspx?s_rawwords=%(keyword)s&s_freeloc=%(location)s'
 
 
-    def __init__(self, keywords="", locations="",  *args, **kwargs):
-        self.logger.debug('in init')
-        # to call the spider with keywords and locations arguments
-        super(CareerbuilderSpider, self).__init__(*args, **kwargs)
-        self.keywords = keywords or obtain_keywords()
-        self.locations = locations or obtain_locations()
-
-    def start_requests(self):
-        self.logger.debug('in start requests')
-        for location in self.locations:
-            for keyword in self.keywords:
-                url_params = {'keyword': keyword,  'location': location}
-                url = self.query_url % url_params
-                self.logger.debug('request url %s' % url)
-                yield Request(url, meta={'keyword': keyword})
-                
     def parse_item(self,  response):
-        self.logger.debug('parse_item %s' % response.url)
-        item = response.meta['item']
+        item = super(CareerbuilderSpider,  self).parse_item(response)
         #soup = bs4.BeautifulSoup(response.body)     
         #item['title'] = response.xpath('//h1/span/text()').extract()
         #if DEBUG == False:
-        #item['description'] = response.css('article').extract()
+        #item['description'] = response.css('article').extract()[0]
         # or
-        item['description'] = response.xpath('//article').extract()[0]
+        try:
+            item['description'] = response.xpath('//article').extract()[0]
+        except IndexError:
+                append(settings.get('LOG_FAIL_URL_FULLPATH'), 'possible 403 or expired:' + response.url)
         # or to dont get html tags
         #item['description'] = bs4.BeautifulSoup(response.body).select('article')[0].text
         item['clearance'] = ''
-        self.logger.debug('title item %s' % item['title'])
         yield item
 
+
     def parse(self, response):
+        super(CareerbuilderSpider,  self).parse(response)
         table = response.css('.gs-job-result-abstract')
         for row in table:
-            item = ScrapyscrappersItem()
-            item['keyword'] = response.meta['keyword']
-            item['date_search'] = current_datetime()
+            item = self.init_item(response)
             item['item_url'] = row.css('.jt').xpath('@href').extract()[0]
             item['title'] = row.css('.jt::text').extract()[0]
             #item['short_description'] = row.css('span[itemprop="description"]::text').extract()[0]

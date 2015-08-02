@@ -1,38 +1,21 @@
 # -*- coding: utf-8 -*-
-import scrapy
-from scrapy import Spider,  Request
+from scrapy import Request
 
 import bs4
 
-from scrapyscrappers.items import ScrapyscrappersItem
-from scrapyscrappers.util import obtain_keywords,  obtain_locations,  current_datetime,  \
-    datetimestr2datetime,  datetime2datetimestr, timeago2datetimestr
+from scrapyscrappers.spiders.basespider import BaseSpider
+from scrapyscrappers.util import datetimestr2datetime,  datetime2datetimestr, \
+    timeago2datetimestr
 
-class SimplyhiredSpider(Spider):
+class SimplyhiredSpider(BaseSpider):
     name = "simplyhiredspider"
     allowed_domains = ["www.simplyhired.com"]
     base_url = 'www.simplyhired.com'
     query_url = 'https://www.simplyhired.com/search?q=%(keyword)s'
 
-    def __init__(self, keywords="", locations="",  *args, **kwargs):
-        self.logger.debug('in init')
-        # to call the spider with keywords and locations arguments
-        super(SimplyhiredSpider, self).__init__(*args, **kwargs)
-        self.keywords = keywords or obtain_keywords()
-        self.locations = locations or obtain_locations()
-
-    def start_requests(self):
-        self.logger.debug('in start requests')
-        for location in self.locations:
-            for keyword in self.keywords:
-                url_params = {'keyword': keyword,  'location': location}
-                url = self.query_url % url_params
-                self.logger.debug('request url %s' % url)
-                yield Request(url, meta={'keyword': keyword})
 
     def parse_item(self,  response):
-        self.logger.debug('parse_item %s' % response.url)
-        item = response.meta['item']
+        item = super(SimplyhiredSpider, self).parse_item(response)
         try:
             item['description'] = response.css('div.detail')[0].extract()
             #item['description'] = response.css('div.description-full::text')[0].extract()
@@ -40,12 +23,13 @@ class SimplyhiredSpider(Spider):
             self.logger.debug('error parsing description')
         yield item
 
+
     def parse(self, response):
-        self.logger.debug('in parse')
+        super(SimplyhiredSpider,  self).parse(response)
 #        # with scrapy selector
 #        # for sel in response.xpath('//div[@class="job"]'):
 #        for sel in response.css('div.job'):
-#            item = ScrapyscrappersItem()
+#            item = self.init_item(response)
 #            item['keyword'] = response.meta['keyword']
 #            item['date_search'] = current_datetime()
 #            #this works, but return different url
@@ -57,10 +41,7 @@ class SimplyhiredSpider(Spider):
         soup = bs4.BeautifulSoup(response.body)
         soupitems = soup.select('div.job')     
         for soupitem in soupitems:
-            self.logger.debug('parsing')
-            item = ScrapyscrappersItem()
-            item['keyword'] = response.meta['keyword']
-            item['date_search'] = current_datetime()
+            item = self.init_item(response)
             item['item_url'] = [a.attrs.get('href') for a in soupitem.select('div.tools > a') if a.attrs.get('href')][0]
             item['title'] = soupitem.select('h2')[0].text.strip()
             try:
