@@ -7,16 +7,23 @@ from scrapyscrappers.spiders.basespider import BaseSpider
 from scrapyscrappers.util import table2dict
     
 class UsajobsSpider(BaseSpider):
-    name = "usajobsspider"
+    name = "usajobs"
     allowed_domains = ["www.usajobs.gov"]
     base_url = 'https://www.usajobs.gov'
     query_url = 'https://www.usajobs.gov/Search?Keyword=%(keyword)s&Location=%(location)s&search=Search&AutoCompleteSelected=False'
-
+    # next page
+    #"/Search/GetPageResultsNew?page=2&amp;keyword=software&amp;statusFilter=public"
+    # several keywords
+    # https://www.usajobs.gov/Search?keyword=software+engineer&Location=&AutoCompleteSelected=&search=Search
+    # advanced search is form with js
+    # https://www.usajobs.gov/Search/AdvancedSearch
 
     def parse_item(self,  response):
         item = super(UsajobsSpider, self).parse_item(response)
         soup = bs4.BeautifulSoup(response.body)          
-        item['description'] = soup.select('div.jobdetail')[0].text
+        # item['description'] = soup.select('div.jobdetail')[0].text # with soup, plan text
+        if response.css('div.jobdetail'):
+            item['description'] = response.css('div.jobdetail')[0].extract() 
         infodict = table2dict(soup,  'div#jobinfo2')
         item['clearance'] = infodict.get('SECURITY CLEARANCE')
         yield item
@@ -45,7 +52,15 @@ class UsajobsSpider(BaseSpider):
             # item.published = ''
             self.logger.debug('title %s' % item['title'])
             yield Request(item['item_url'],  callback=self.parse_item, meta={'item': item} )
-        next = soup.select('a.nextPage')
+        # next = soup.select('a.nextPage') # with soup
+        next = response.css('a.nextPage::attr(href)').extract()
         if next:
-            self.logger.debug('next url: %s' % url )
-            yield Request(self.base_url + next[0]['href'],  callback=self.parse, meta={'keyword': response.meta['keyword']})
+            self.logger.debug('next url: %s' % next[0])
+            yield Request(
+                # self.base_url + next[0]['href'],  # with soup
+                self.base_url + next[0], 
+                callback=self.parse, 
+                meta={'keyword': item['keyword'],  'location': item['location_search']}
+            )
+        else:
+            self.logger.debug('no next url')
