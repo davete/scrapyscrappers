@@ -37,22 +37,42 @@ Check https://virtualenv.pypa.io/en/latest/installation.html or follow these ins
     cd scrapyscrappers
     pip install -r requirements.txt
 
+
+configuration
+----------------------
+
+Create a file named "keywords.txt" in the root of the project. Write every keyword in a new line or to use several keywords in the same request, write the keywords in the same line separated by an space.
+The same applies to "locations.txt". If this file doesn't exist or doesn' have any locations, the requests will be perform without location.
+
+To use several proxies, create a file named "proxies.json" inside of the data directory. The format is:
+
+    [
+       "http://ip1:port1",
+       "http://ip2:port2"
+    ]
+
+In scrapyscrappers/settings.py, ensure that "USE_PROXY = True" and "FAHttpProxyMiddleware" is present in DOWNLOADER_MIDDLEWARES 
+
+More about scrapyscrappers/settings.py: TBD
+    
 running
 --------------
 
-to list the scrappers:
+To list the scrappers:
 
     scrapy list
 
-to run one of the scrappers
+To run one of the scrappers
 
     scrapy crawl scrappername
 
-to run one of the scrappers using keywords like command like argument and json file name like command line arguments:
+To run one of the scrappers using keywords like command like argument and json file name like command line arguments:
 
     scrapy crawl scrappername -o json/scrappername.json -a keywords=python,ruby
 
-to run all the spiders from an script:
+currently is not possible to have a keyword composed by 2 (or more) words separated by spaces in the command line.
+    
+To run all the spiders from an script:
 
     run.py
     
