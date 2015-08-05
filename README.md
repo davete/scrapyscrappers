@@ -41,10 +41,10 @@ Check https://virtualenv.pypa.io/en/latest/installation.html or follow these ins
 configuration
 ----------------------
 
-Create a file named "keywords.txt" in the root of the project. Write every keyword in a new line or to use several keywords in the same request, write the keywords in the same line separated by an space.
+Create a file in "config" dir named "keywords.txt" in the root of the project. Write every keyword in a new line or to use several keywords in the same request, write the keywords in the same line separated by an space.
 The same applies to "locations.txt". If this file doesn't exist or doesn' have any locations, the requests will be perform without location.
 
-To use several proxies, create a file named "proxies.json" inside of the data directory. The format is:
+To use several proxies, create a file in "config" dir named "proxies.json" inside of the data directory. The format is:
 
     [
        "http://ip1:port1",

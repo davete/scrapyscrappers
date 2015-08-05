@@ -169,8 +169,10 @@ FEED_EXPORTERS = {
 
 KEYWORDS_FILE = 'keywords.txt'
 LOCATIONS_FILE = 'locations.txt'
-KEYWORDS_PATH = join(BASE_PATH,  KEYWORDS_FILE)
-LOCATIONS_PATH = join(BASE_PATH,  LOCATIONS_FILE)
+CONFIG_DIR = 'config'
+CONFIG_PATH = join(BASE_PATH,  CONFIG_DIR)
+KEYWORDS_PATH = join(CONFIG_PATH,  KEYWORDS_FILE)
+LOCATIONS_PATH = join(CONFIG_PATH,  LOCATIONS_FILE)
 DATETIME_FORMAT = '%Y-%m-%d %H:%M'
 HTML_DIR = 'html'
 HTML_PATH= join(HTML_DIR, "%(time)s-%(name)s-%(location)s-%(keyword)s-%(item)s.html")
@@ -189,7 +191,7 @@ NEWCIRC = True
 # For HttpProxyMiddleware
 USE_PROXY = True
 PROXIES_FILE = 'proxies.json'
-PROXIES_PATH = join(DATA_PATH,  PROXIES_FILE)
+PROXIES_PATH = join(CONFIG_PATH,  PROXIES_FILE)
 
 
 try:
