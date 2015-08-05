@@ -5,14 +5,16 @@ import bs4
 
 from scrapyscrappers.spiders.basespider import BaseSpider
 from scrapyscrappers.util import datetimestr2datetime,  datetime2datetimestr, \
-    timeago2datetimestr
+    timeago2datetimestr,  append
+
 
 class SimplyhiredSpider(BaseSpider):
-    name = "simplyhiredspider"
+    name = "simplyhired"
     allowed_domains = ["www.simplyhired.com"]
     base_url = 'www.simplyhired.com'
-    query_url = 'https://www.simplyhired.com/search?q=%(keyword)s'
-
+    query_url = 'https://www.simplyhired.com/search?q=%(keyword)s&l=%(location)s'
+    # next page
+    # http://www.simplyhired.com/search?q=python+django&pn=2
 
     def parse_item(self,  response):
         item = super(SimplyhiredSpider, self).parse_item(response)
@@ -20,7 +22,7 @@ class SimplyhiredSpider(BaseSpider):
             item['description'] = response.css('div.detail')[0].extract()
             #item['description'] = response.css('div.description-full::text')[0].extract()
         except IndexError:
-            self.logger.debug('error parsing description')
+            append(self.fail_url_path, 'failed to parse:' + response.url)
         yield item
 
 
@@ -40,6 +42,9 @@ class SimplyhiredSpider(BaseSpider):
         # with bs4
         soup = bs4.BeautifulSoup(response.body)
         soupitems = soup.select('div.job')     
+        if len(soupitems) < 1:
+            append(self.fail_url_path, 'no data:' + response.url)
+            return
         for soupitem in soupitems:
             item = self.init_item(response)
             item['item_url'] = [a.attrs.get('href') for a in soupitem.select('div.tools > a') if a.attrs.get('href')][0]
@@ -55,16 +60,22 @@ class SimplyhiredSpider(BaseSpider):
                 item['region'] = soupitem.find('span', itemprop="addressRegion").text
             item['short_description'] = soupitem.find('p', itemprop="description").text
             item['published'] = timeago2datetimestr(item['date_search'],  soupitem.select('span.ago')[0].text)
-            #salary
-            #clearance
-            #department
-            #description
-
+            # data not available in this website
+            item['salary'] = ''
+            item['clearance'] = ''
+            item['department'] = ''
             self.logger.debug('title %s' % item['title'])
             yield Request(item['item_url'],  callback=self.parse_item, meta={'item': item} )
 
         #for url in response.xpath('//link[@rel="next"]/@href').extract()[0]:
-        next = response.css('a.next::attr(href)').extract()
+        next = response.css('a.next::attr(href)').extract()            
         if next:
-            self.logger.debug('next url: %s' % next[0] )
-            yield Request(next[0], callback=self.parse, meta={'keyword': response.meta['keyword']})
+            self.logger.debug('next url: %s' % next[0])
+            yield Request(
+                # self.base_url + next[0]['href'],  # with soup
+                next[0], 
+                callback=self.parse, 
+                meta={'keyword': response.meta['keyword'],  'location': response.meta['location']}
+            )
+        else:
+            self.logger.debug('no next url')            

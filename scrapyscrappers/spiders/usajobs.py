@@ -4,7 +4,8 @@ from scrapy.http import Request
 import bs4
 
 from scrapyscrappers.spiders.basespider import BaseSpider
-from scrapyscrappers.util import table2dict
+from scrapyscrappers.util import table2dict,  append
+
     
 class UsajobsSpider(BaseSpider):
     name = "usajobs"
@@ -22,10 +23,13 @@ class UsajobsSpider(BaseSpider):
         item = super(UsajobsSpider, self).parse_item(response)
         soup = bs4.BeautifulSoup(response.body)          
         # item['description'] = soup.select('div.jobdetail')[0].text # with soup, plan text
-        if response.css('div.jobdetail'):
+        try:
             item['description'] = response.css('div.jobdetail')[0].extract() 
-        infodict = table2dict(soup,  'div#jobinfo2')
-        item['clearance'] = infodict.get('SECURITY CLEARANCE')
+        except IndexError:
+            append(self.fail_url_path, 'failed to parse:' + response.url)
+        else:
+            infodict = table2dict(soup,  'div#jobinfo2')
+            item['clearance'] = infodict.get('SECURITY CLEARANCE')
         yield item
 
 
@@ -33,6 +37,9 @@ class UsajobsSpider(BaseSpider):
         super(UsajobsSpider,  self).parse(response)
         soup = bs4.BeautifulSoup(response.body)
         soupitems = soup.select('div#jobResultNew')    
+        if len(soupitems) < 1:
+            append(self.fail_url_path, 'no data:' + response.url)
+            return
         for soupitem in soupitems:
             item = self.init_item(response)
             item['item_url'] = self.base_url + soupitem.select('a.jobTitleLink')[0].attrs.get('href')
@@ -49,18 +56,18 @@ class UsajobsSpider(BaseSpider):
             item['salary'] = details.get('Salary',  '')
             item['department'] = details.get('Department',  '')
             # data not available in this website
-            # item.published = ''
+            item['published']= ''
             self.logger.debug('title %s' % item['title'])
             yield Request(item['item_url'],  callback=self.parse_item, meta={'item': item} )
         # next = soup.select('a.nextPage') # with soup
         next = response.css('a.nextPage::attr(href)').extract()
         if next:
-            self.logger.debug('next url: %s' % next[0])
+            self.logger.debug('next url: %s' % self.base_url + next[0])
             yield Request(
                 # self.base_url + next[0]['href'],  # with soup
                 self.base_url + next[0], 
                 callback=self.parse, 
-                meta={'keyword': item['keyword'],  'location': item['location_search']}
+                meta={'keyword': response.meta['keyword'],  'location': response.meta['location']}
             )
         else:
             self.logger.debug('no next url')

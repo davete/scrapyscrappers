@@ -4,7 +4,9 @@ from os.path import join
 
 from scrapy import Spider
 from scrapy.http import Request
-from scrapy.conf import settings
+#from scrapy.conf import settings
+#from scrapy.settings import Settings
+from scrapy.utils.project import get_project_settings
 
 from scrapyscrappers.items import ScrapyscrappersItem
 from scrapyscrappers.util import obtain_keywords,  obtain_locations,  \
@@ -12,8 +14,12 @@ from scrapyscrappers.util import obtain_keywords,  obtain_locations,  \
     url2filename ,  append
 
 
+settings = get_project_settings()
+
+
 class BaseSpider(Spider):
-    handle_httpstatus_list = [403,  404]
+    handle_httpstatus_list = [403,  404,  503,  502]
+    fail_url_path = settings.get('LOG_FAIL_URL_FULLPATH')
 
     def check_ip(self, response):
         sel = response.xpath('//body/text()')
@@ -27,7 +33,8 @@ class BaseSpider(Spider):
             if response.status == 200:
                 append(settings.get('LOG_OK_URL_FULLPATH'), response.url)
             else:
-                append(settings.get('LOG_FAIL_URL_FULLPATH'), response.url)
+                self.logger.debug('error http code: %s',  response.status)
+                append(settings.get('LOG_FAIL_URL_FULLPATH'), str(response.status) + ': ' + response.url)
         except Exception, e:
             self.logger.exception(e)
 

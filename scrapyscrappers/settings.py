@@ -11,6 +11,7 @@
 
 
 from os.path import dirname,  join,  abspath
+from datetime import datetime
 #from scrapy.extensions.httpcache import DummyPolicy
 
 BOT_NAME = 'scrapyscrappers'
@@ -24,7 +25,8 @@ DEBUG=True
 JSON_DIR = 'json'
 DATA_DIR = 'data'
 LOG_DIR = 'log'
-LOG_FILENAME =  BOT_NAME + '.log'
+NOW = datetime.utcnow().replace(microsecond=0).isoformat().replace(':', '-')
+LOG_FILENAME =  NOW + '_' + BOT_NAME + '.log'
 BASE_PATH = dirname(dirname(abspath(__file__)))
 JSON_PATH = join(BASE_PATH,  JSON_DIR)
 DATA_PATH = join(BASE_PATH,  DATA_DIR)
@@ -134,7 +136,7 @@ LOG_FORMAT = "%(levelname)s [%(name)s] ( %(filename)s:%(lineno)s, in %(funcName)
 
 #LOG_ENABLED = True
 # uncomment to log to file
-#LOG_FILE = LOG_FULLPATH
+LOG_FILE = LOG_FULLPATH
 #LOG_ENCODING = 'utf-8'
 #STATS_DUMP = True # default True
 
@@ -153,7 +155,7 @@ HTTP_PROXY = 'http://127.0.0.1:8118'
 
 #FEED_FORMAT = "jsonlines"
 FEED_FORMAT = "jsonident"
-FEED_URI = "file:///" + join(JSON_PATH, "%(name)s-%(time)s.json")
+FEED_URI = "file://" + join(JSON_PATH, "%(time)s-%(name)s.json")
 #FEED_URI = "file:///" + join(JSON_PATH, "%(keyword)s-%(name)s-%(time)s.json")
 
 # FIXME: instead of creating a new exporter, see how to pass the encoder 
@@ -171,9 +173,11 @@ KEYWORDS_PATH = join(BASE_PATH,  KEYWORDS_FILE)
 LOCATIONS_PATH = join(BASE_PATH,  LOCATIONS_FILE)
 DATETIME_FORMAT = '%Y-%m-%d %H:%M'
 HTML_DIR = 'html'
-HTML_PATH= join(HTML_DIR, "%(name)s-%(location)s-%(keyword)s-%(item)s-%(time)s.html")
-LOG_OK_URL_FILENAME = 'ok_url.log'
-LOG_FAIL_URL_FILENAME = 'fail_url.log'
+HTML_PATH= join(HTML_DIR, "%(time)s-%(name)s-%(location)s-%(keyword)s-%(item)s.html")
+#LOG_OK_URL_FILENAME = 'ok_url.log'
+#LOG_FAIL_URL_FILENAME = 'fail_url.log'
+LOG_OK_URL_FILENAME = NOW +'_ok_url.log'
+LOG_FAIL_URL_FILENAME = NOW + '_fail_url.log'
 LOG_OK_URL_FULLPATH = join(LOG_PATH,  LOG_OK_URL_FILENAME)
 LOG_FAIL_URL_FULLPATH = join(LOG_PATH,  LOG_FAIL_URL_FILENAME)
 

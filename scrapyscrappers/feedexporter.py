@@ -27,6 +27,8 @@ class JsonIdentItemExporter(JsonItemExporter):
     """
 
     def __init__(self, file, **kwargs):
+        # FIXME: this seems to be ignored
+        self.export_empty_fields = True
         filename = file.name
         logger.debug('in JsonIdentItemExporter %s' % filename)
         kwargs['indent'] = 2

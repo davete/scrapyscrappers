@@ -2,23 +2,29 @@
 from datetime import datetime,  timedelta
 from os.path import exists
 from settings import KEYWORDS_PATH,  LOCATIONS_PATH,  DATETIME_FORMAT,  HTML_PATH
-from scrapy.conf import settings
+#from scrapy.conf import settings
+#from scrapy.settings import Settings
+from scrapy.utils.project import get_project_settings
 import logging
 
+
+settings = get_project_settings()
 logger = logging.getLogger(__name__)
 
 def obtain_keywords():
     if exists(KEYWORDS_PATH):
         with open(KEYWORDS_PATH) as f:
-            keywordsstr = f.read()
-        return keywordsstr.split()
+            keywordsstr = f.readlines()
+        # return keywordsstr
+        return [i.strip().replace(' ', '+') for i in keywordsstr]
     return ['']
 
 def obtain_locations():
     if exists(LOCATIONS_PATH):
         with open(LOCATIONS_PATH) as f:
-            locationsstr = f.read()
-        return locationsstr.split()
+            locationsstr = f.readlines()
+        # return locationsstr
+        return [i.strip().replace(' ', '+') for i in locationsstr]
     return ['']
 
 def current_datetime():
@@ -91,7 +97,7 @@ def html2str(html):
 
 
 def save_html(body,  args):
-    html_path = settings.get('HTML_PATH') % args
+    html_path = (settings.get('HTML_PATH') % args)[:255]
     with open(html_path,  'w') as f:
         f.write(body)
     logger.debug('saving html %s' % html_path)
